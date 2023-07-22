@@ -119,8 +119,6 @@ export const deleteHackathonById = async (req, res) => {
 };
 
 
-
-
 export const registerForHackathon = async (req, res) => {
   try {
     const { hackathonId } = req.params;
@@ -132,7 +130,6 @@ export const registerForHackathon = async (req, res) => {
     }
 
     const currentDate = new Date();
-
     if (currentDate > hackathon.registration_end_date) {
       return res.status(400).json({ error: 'Registration date has already passed' });
     }
@@ -144,6 +141,20 @@ export const registerForHackathon = async (req, res) => {
     if (totalRegisteredParticipants >= hackathon.max_participants) {
       await Hackathon.findByIdAndUpdate(hackathonId, { registration_open: false });
       return res.status(400).json({ error: 'Hackathon registration is full' });
+    }
+
+    const participantRegisteredHackathons = await Participant.find({
+      user_id,
+    }).populate('hackathon_id');
+
+    for (const participantHackathon of participantRegisteredHackathons) {
+      const { start_date, end_date } = participantHackathon.hackathon_id;
+      if (
+        start_date <= hackathon.end_date &&
+        end_date >= hackathon.start_date
+      ) {
+        return res.status(400).json({ error: 'Cannot register for overlapping hackathons' });
+      }
     }
 
     const participant = await Participant.create({
