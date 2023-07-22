@@ -36,6 +36,22 @@ const hackathonSchema = new mongoose.Schema({
   },
   technology_stack: {
     type: String,
+    enum: [
+      'Python',
+      'Java',
+      'Javascript',
+      'C',
+    ],
+    required: true,
+  },
+  min_experience_level: {
+    type: String,
+    enum: [
+      'Entry-level',
+      'Intermediate',
+      'Mid-level',
+      'Senior or executive-level',
+    ],
     required: true,
   },
 });

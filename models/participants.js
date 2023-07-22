@@ -13,10 +13,22 @@ const participantSchema = new mongoose.Schema({
   },
   experience_level: {
     type: String,
+    enum: [
+      'Entry-level',
+      'Intermediate',
+      'Mid-level',
+      'Senior or executive-level',
+    ],
     required: true,
   },
   technology_stack: {
     type: String,
+    enum: [
+      'Python',
+      'Java',
+      'Javascript',
+      'C',
+    ],
     required: true,
   },
   business_unit: {
