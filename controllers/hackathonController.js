@@ -34,20 +34,69 @@ export const createHackathon = async (req, res) => {
 };
 
 
+// export const getAllHackathons = async (req, res) => {
+//   try {
+//     const hackathons = await Hackathon.find();
+//     const hackathonsWithParticipants = await Promise.all(
+//       hackathons.map(async (hackathon) => {
+//         const participants = await Participant.find({ hackathon_id: hackathon._id });
+//         return { ...hackathon.toObject(), participants };
+//       })
+//     );
+//     res.json(hackathonsWithParticipants);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// };
+
+
+
 export const getAllHackathons = async (req, res) => {
   try {
-    const hackathons = await Hackathon.find();
+    const { category, page = 1, perPage = 10 } = req.query;
+    let hackathons = [];
+
+    const currentDate = new Date();
+
+    switch (category) {
+      case 'past':
+        hackathons = await Hackathon.find({ end_date: { $lt: currentDate } });
+        break;
+
+      case 'active':
+        hackathons = await Hackathon.find({
+          start_date: { $lte: currentDate },
+          end_date: { $gte: currentDate },
+        });
+        break;
+
+      case 'upcoming':
+        hackathons = await Hackathon.find({ start_date: { $gt: currentDate } });
+        break;
+
+      default:
+        hackathons = await Hackathon.find();
+        break;
+    }
+
+    const totalHackathons = hackathons.length;
+
+    hackathons = hackathons.slice((page - 1) * perPage, page * perPage);
+
     const hackathonsWithParticipants = await Promise.all(
       hackathons.map(async (hackathon) => {
         const participants = await Participant.find({ hackathon_id: hackathon._id });
         return { ...hackathon.toObject(), participants };
       })
     );
-    res.json(hackathonsWithParticipants);
+
+    res.json({ totalHackathons, currentPage: page, totalPages: Math.ceil(totalHackathons / perPage), hackathons: hackathonsWithParticipants });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+
 
 
 export const getHackathonById = async (req, res) => {
@@ -174,3 +223,4 @@ export const registerForHackathon = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
