@@ -26,7 +26,6 @@ export const getParticipantById = async (req, res) => {
 
 
 export const getParticipantsByCriteria = async (req, res) => {
-    console.log("--------------")
   try {
     const { experience_level, technology_stack, business_unit } = req.query;
 
