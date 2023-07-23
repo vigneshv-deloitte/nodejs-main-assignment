@@ -70,9 +70,15 @@ export const getAllHackathons = async (req, res) => {
     const hackathonsWithParticipants = await Promise.all(
       hackathons.map(async (hackathon) => {
         const participants = await Participant.find({ hackathon_id: hackathon._id });
-        return { ...hackathon.toObject(), participants };
+        const hackathonWithParticipants = { ...hackathon.toObject(), participants };
+        hackathonWithParticipants.status = calculateHackathonStatus(
+          hackathon,
+          participants.length
+        );
+        return hackathonWithParticipants;
       })
     );
+    
 
     res.json({ totalHackathons, currentPage: page, totalPages: Math.ceil(totalHackathons / perPage), hackathons: hackathonsWithParticipants });
   } catch (error) {
@@ -92,6 +98,10 @@ export const getHackathonByQuery = async(req, res) => {
       }
       const participants = await Participant.find({ hackathon_id: hackathon._id });
       const hackathonWithParticipants = { ...hackathon.toObject(), participants };
+      hackathonWithParticipants.status = calculateHackathonStatus(
+        hackathon,
+        participants.length
+      );
       return res.json(hackathonWithParticipants);
     }
 
@@ -110,7 +120,12 @@ export const getHackathonByQuery = async(req, res) => {
     const hackathonsWithParticipants = await Promise.all(
       hackathons.map(async (hackathon) => {
         const participants = await Participant.find({ hackathon_id: hackathon._id });
-        return { ...hackathon.toObject(), participants };
+        const hackathonWithParticipants = { ...hackathon.toObject(), participants };
+        hackathonWithParticipants.status = calculateHackathonStatus(
+          hackathon,
+          participants.length
+        );
+        return hackathonWithParticipants;
       })
     );
 
@@ -119,6 +134,23 @@ export const getHackathonByQuery = async(req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+function calculateHackathonStatus(hackathon, registeredParticipants) {
+  const currentDate = new Date();
+  if (!hackathon.registration_open) {
+    return 'Registration Closed';
+  }
+  if (currentDate < hackathon.registration_start_date) {
+    return 'Upcoming - Registration Not Started';
+  }
+  if (currentDate > hackathon.registration_end_date) {
+    return 'Registration Ended';
+  }
+  if (registeredParticipants >= hackathon.max_participants) {
+    return 'Registration Full';
+  }
+  return 'Open for Registration';
+}
 
 
 export const updateHackathonById = async (req, res) => {

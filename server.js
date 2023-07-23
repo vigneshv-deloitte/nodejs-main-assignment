@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import companyRouter from "./routes/companyRoutes.js";
 import hackathonRouter from "./routes/hackathonRoute.js";
 import userRouter from "./routes/userRoutes.js";
+import participantRouter from "./routes/participantRoutes.js"
 import bodyParser from "body-parser";
 import cors from "cors"
 
@@ -22,6 +23,7 @@ mongoose.connect('mongodb+srv://username:XiHzba1lVneKkEuW@cluster0.vva96ak.mongo
 app.use("/company", companyRouter);
 app.use("/hackathon", hackathonRouter);
 app.use("/user", userRouter);
+app.use("/participant", participantRouter);
 
 
 export const server=app.listen(3000, async(req,res)=>{
