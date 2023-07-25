@@ -13,6 +13,16 @@ export const registerUser = async (req, res) => {
       return res.status(409).json({ error: 'Email already registered' });
     }
 
+    const minLength = 8;
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    
+    if (password.length < minLength || !hasLowerCase || !hasUpperCase || !hasDigit) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one digit.",
+      });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
