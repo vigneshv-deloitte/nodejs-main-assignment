@@ -7,7 +7,18 @@ import { verifyPassword } from "../utils/verifyPassword.js";
 export const createCompany = async (req, res) => {
   try {
     let { name, password } = req.body;
-     password= await bcrypt.hash(password, 10);
+    const minLength = 8;
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasDigit = /\d/.test(password);
+
+    if (password.length < minLength || !hasLowerCase || !hasUpperCase || !hasDigit) {
+
+      return res.status(400).json({
+        message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one digit.",
+      });
+    }
+    password= await bcrypt.hash(password, 10);
     const company = await Company.create({ name, password });
     res.status(201).json(company);
   } catch (error) {
